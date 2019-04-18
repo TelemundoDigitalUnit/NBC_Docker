@@ -1,0 +1,67 @@
+version: "3"
+services:
+  mysql:
+    image: mariadb
+    volumes:
+        - ".data:/var/lib/mysql"
+    environment:
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    restart: always
+    networks:
+      - back
+  wordpress:
+    depends_on:
+      - mysql
+    image: wordpress:latest
+    restart: always
+    volumes:
+      - ./wp-container:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+    ports:
+      - 80:80 # Expose http and https
+      - 443:443
+    hostname: "${LOCAL_DEV_DOMAIN}"
+    networks:
+      back:
+        aliases:
+          - "${LOCAL_DEV_DOMAIN}"
+  wp-cli:
+    image: "wordpress:cli-php${PHP_VERSION:-7.2}"
+    restart: "on-failure"
+    volumes:
+      - ./wp-container:/var/www/html
+      - ./docker_init.sh:/var/www/html/init.sh
+    command: /var/www/html/init.sh
+    depends_on:
+      - mysql
+      - wordpress
+    networks:
+      - back
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      LOCAL_DEV_DOMAIN: "$LOCAL_DEV_DOMAIN"
+      WP_SITE_TITLE: "$WP_SITE_TITLE"
+      WP_ADMIN_USER: "$WP_ADMIN_USER"
+      WP_ADMIN_PASSWORD: "$WP_ADMIN_PASSWORD"
+      WP_ADMIN_EMAIL: "$WP_ADMIN_EMAIL"
+      WP_IS_MULTISITE: "$WP_IS_MULTISITE"
+      WP_IS_MULTISITE_SUBDOMAIN: "$WP_IS_MULTISITE_SUBDOMAIN"
+      WP_PROJECT_THEME_FOLDER: "$WP_PROJECT_THEME_FOLDER"
+  phpmyadmin:
+    depends_on:
+      - mysql
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - 8889:80
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+    networks:
+      - back
+networks:
+  back:
+volumes:
+  db_data:

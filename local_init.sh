@@ -28,17 +28,17 @@ echo '😈 Install node things and stealing your bank account information'
 cd ./wp-container/wp-content
 
 echo "😈 Building composer. Honeslty have no idea what this is for."
-sudo composer install --no-ansi --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
+composer install --no-ansi --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
 
 echo '😈 Run all the scripts! For node... I think...'
-sudo chmod +x bin/script-build.sh
+chmod +x bin/script-build.sh
 echo '😈 Building plugin byline-manager'
-cd plugins/byline-manager && sudo npm install --quiet && sudo npm run build && cd ..
+cd plugins/byline-manager && npm install --quiet && npm run build && cd ..
 echo '😈 Building plugin nbc-library'
-cd nbc-library && sudo npm install --quiet && sudo npm run build && cd .. && cd ..
+cd nbc-library && npm install --quiet && npm run build && cd .. && cd ..
 echo '😈 Building theme nbc-station'
-sudo nvm install 8
-sudo npm i -g npm@6
-cd themes/nbc-station && sudo npm install --quiet && sudo npm run build
+nvm install 8
+npm i -g npm@6
+cd themes/nbc-station && npm install --quiet && npm run build
 
 echo 'Done. Maybe..'  

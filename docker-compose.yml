@@ -45,6 +45,8 @@ services:
 
     memcached:
         container_name: nbc-wp-memcached
+        depends_on:
+            - wordpress
         image: memcached:alpine
         restart: always
         ports:
@@ -77,6 +79,7 @@ services:
     phpmyadmin:
         container_name: nbc-wp-phpmyadmin
         depends_on:
+            - wordpress
             - mysql
         image: phpmyadmin/phpmyadmin
         restart: always

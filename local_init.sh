@@ -32,13 +32,22 @@ composer install --no-ansi --no-dev --no-interaction --no-progress --no-scripts 
 
 echo '😈 Run all the scripts! For node... I think...'
 chmod +x bin/script-build.sh
+
 echo '😈 Building plugin byline-manager'
 cd plugins/byline-manager && npm install --quiet && npm run build && cd ..
+
 echo '😈 Building plugin nbc-library'
-cd nbc-library && npm install --quiet && npm run build && cd .. && cd ..
+cd nbc-library
+npm install --quiet
+npm run build
+cd ..
+cd ..
+
 echo '😈 Building theme nbc-station'
-nvm install 8
+. ~/.nvm/nvm.sh install 8
 npm i -g npm@6
-cd themes/nbc-station && npm install --quiet && npm run build
+cd themes/nbc-station
+npm install --quiet
+npm run build
 
 echo 'Done. Maybe..'  

@@ -31,10 +31,12 @@ echo "😈 Building composer. Honeslty have no idea what this is for."
 composer install --no-ansi --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
 
 echo '😈 Run all the scripts! For node... I think...'
-chmod +x bin/script-build.sh
+# chmod +x bin/script-build.sh
 
 echo '😈 Building plugin byline-manager'
-cd plugins/byline-manager && npm install --quiet && npm run build && cd ..
+cd plugins/byline-manager
+npm install --quiet
+npm run build && cd ..
 
 echo '😈 Building plugin nbc-library'
 cd nbc-library
@@ -44,7 +46,7 @@ cd ..
 cd ..
 
 echo '😈 Building theme nbc-station'
-. ~/.nvm/nvm.sh install 8
+nvm install 8
 npm i -g npm@6
 cd themes/nbc-station
 npm install --quiet

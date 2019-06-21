@@ -41,7 +41,7 @@ cd ..
 cd ..
 
 echo '😈 Building theme nbc-station'
-nvm install 8
+nvm use 8
 npm i -g npm@6
 cd themes/nbc-station
 npm install --quiet

@@ -1,4 +1,5 @@
 #!/bin/bash
+source .env
 
 echo "initializing..."
 #installing wp

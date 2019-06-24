@@ -38,10 +38,9 @@ Here are a list of frameworks you need to have pre-installed on your machine. If
 1. Start Docker Desktop and wait till the status reads `Docker Desktop is running`
 2. In Terminal, run the following command:
 ```./local_init.sh```
-3. Once setup has been completed, visit `http://localhost/` in your browser.
-4. Use the credentials inside of the `.env` file to login into the WordPress Admin Dashboard.
-5. Activate the NBC Theme.
-6. All your work should be within the `wp-content` folder. __DO NOT__ commit to the main Docker Container repository.
+3. Once setup has been completed, visit `http://localhost/wp-admin` on your browser and sign in using credentials stored inside of the `.env` file.
+4. Activate the NBC Theme.
+5. All your work should be within the `wp-content` folder. __DO NOT__ commit to the main Docker Container repository.
 
 ## Questions?
 

@@ -8,9 +8,13 @@ echo '😈 Give me all your base!'
 # echo '😈 I promise not to share your password with 3rd parties.. or Russia'
 # sudo -v
 
-echo '😈 Spinning up Docker and then taking a 30s nap!'
-docker-compose up -d
-sleep 30
+echo '😈 Spinning up Docker and then taking a nap until state is running..'
+docker-compose up -d 2>/dev/null &
+
+while test (docker inspect -f '{{.State.Running}}' nbc-wp-php 2>/dev/null) != "true"
+    echo -n '.'
+    sleep 0.1
+end
 
 echo '😈 Removing WordPress wp-content folder'
 rm -Rf wp-container/wp-content

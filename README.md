@@ -1,5 +1,11 @@
 
-# NBC WordPress Docker Setup 
+# NBC WordPress Docker Setup
+
+- [NBC WordPress Docker Setup](#nbc-wordpress-docker-setup)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Troubleshooting](#troubleshooting)
+  - [Questions?](#questions)
 
 A Docker Container which setups up WordPress with PHP-FPM, Nginx with a self-signed SSL certificate, WordPress CLI, MariaDB, memcache and phpMyAdmin. In addition, the setup script will install the WordPress VIP MU Plugins and the NBCOTS VIP repository if you have access. You will need to learn the Docker Compose commands to spin down containers and spin them back up.
 
@@ -41,6 +47,19 @@ Here are a list of frameworks you need to have pre-installed on your machine. If
 3. Once setup has been completed, visit `http://localhost/wp-admin` on your browser and sign in using credentials stored inside of the `.env` file.
 4. Activate the NBC Theme.
 5. All your work should be within the `wp-content` folder. __DO NOT__ commit to the main Docker Container repository.
+
+
+## Troubleshooting
+
+### Removing Orphan Containers
+
+Run the following commands to ensure orphaned containers are removed.
+
+```bash
+docker-compose down --remove-orphans
+docker stop $(docker ps -a -q)
+docker rm $(docker ps -a -q)
+```
 
 ## Questions?
 

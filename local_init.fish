@@ -7,7 +7,7 @@ set -l BASE_SCRIPT_PATH (pwd)
 set -l SETUP_PATH $BASE_SCRIPT_PATH/setup
 
 # Get parameters
-source $SETUP_PATH/fish/getopts.fish
+source $SETUP_PATH/fish/getopts.fish $argv
 
 echo "😈 Compiling project: $PROJECT"
 

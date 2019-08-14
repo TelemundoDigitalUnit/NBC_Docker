@@ -3,6 +3,7 @@ services:
     mysql:
         container_name: nbc-wp-mysql
         environment:
+            MYSQL_DATABASE: 'wordpress'
             MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
         image: mariadb:10.4
         restart: always

@@ -12,6 +12,11 @@ services:
             - .logs/mysql:/var/log/mysql
         networks:
             - nbc-wp
+        healthcheck:
+            test: mysqlshow -p$MYSQL_ROOT_PASSWORD
+            interval: 5s
+            timeout: 5s
+            retries: 3
 
     wordpress:
         container_name: nbc-wp-php
@@ -19,13 +24,20 @@ services:
             - mysql
         environment:
             WORDPRESS_DB_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
-        image: 'wordpress:5.2.2-fpm'
+        image: nbc-wordpress
+        build:
+            context: ./setup/docker/wordpress
         restart: always
         volumes:
             - ./wp-container:/var/www/html
             - ./conf/php.ini:/usr/local/etc/php/conf.d/wp.ini
         networks:
             - nbc-wp
+        healthcheck:
+            test: env SCRIPT_NAME=/var/www/html/wp-admin/index.php SCRIPT_FILENAME=/var/www/html/wp-admin/index.php REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000
+            interval: 10s
+            timeout: 10s
+            retries: 3
 
     nginx:
         container_name: nbc-wp-nginx

@@ -55,6 +55,8 @@ while true
 
     printf '.'
 
+    sleep 5
+
     if [ $iterations -ge $max_iterations ]
         printf "$RED\nMySQL failed to come up after $max_iterations attempts.\n$NC"
         check_error 1
@@ -79,6 +81,8 @@ while true
     end
 
     printf '.'
+
+    sleep 5
 
     if [ $iterations -ge $max_iterations ]
         printf "$RED\nWordpress failed to come up after $max_iterations attempts.\n$NC"

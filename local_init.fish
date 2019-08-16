@@ -98,9 +98,9 @@ rm -Rf wp-container/wp-content
 set -l PROJECT_REPOSITORY_SSH_URL ""
 
 if [ "$PROJECT" = "" -o "$PROJECT" = "main" ];
-    set PROJECT_REPOSITORY_SSH_URL git@github.com-nbcsteveb:wpcomvip/nbcots.git ;
+    set PROJECT_REPOSITORY_SSH_URL https://github.com/wpcomvip/nbcots.git ;
 else if [ "$PROJECT" = "lx" -o "$PROJECT" = "localx" ];
-    set PROJECT_REPOSITORY_SSH_URL git@github.com-nbcsteveb:wpcomvip/nbcotslx.git ;
+    set PROJECT_REPOSITORY_SSH_URL https://github.com/wpcomvip/nbcotslx.git ;
 end
 
 printf "$GREEN😈 Replacing it with our VIP NBCOTS Repository$NC\n"
@@ -125,9 +125,6 @@ if [ $status -eq 0 ]
 end
 
 printf "$GREEN😈 Installing multi-site support..\n$NC"
-docker-compose run wp-cli 1>>$LOG_FILE 2>>$LOG_FILE
-check_error $status
-
 docker-compose run wp-cli 1>>$LOG_FILE 2>>$LOG_FILE
 check_error $status
 

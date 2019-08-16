@@ -1,12 +1,11 @@
 #!/bin/bash
-source .env
-
 echo "initializing..."
+
 #installing wp
-if $(wp core is-installed); then
+if ! $(wp core is-installed); then
     echo "wp installed"
 
-    if [ -n "$WP_PROJECT_THEME_FOLDER" ];
+    if [ ! -d "$WP_PROJECT_THEME_FOLDER" ];
     then
         echo "mkdir wp-content/themes/$WP_PROJECT_THEME_FOLDER"
         mkdir wp-content/themes/$WP_PROJECT_THEME_FOLDER
@@ -23,21 +22,21 @@ if $(wp core is-installed); then
             wp core multisite-install --url=$LOCAL_DEV_DOMAIN --title="$WP_SITE_TITLE" --admin_name=$WP_ADMIN_USER --admin_password=$MYSQL_ROOT_PASSWORD --admin_email=$WP_ADMIN_EMAIL --skip-email
         fi
 
-        if [ -n "$WP_PROJECT_THEME_FOLDER" ];
+        if [ -d "$WP_PROJECT_THEME_FOLDER" ];
         then
             echo "wp theme enable $WP_PROJECT_THEME_FOLDER --network"
             wp theme enable $WP_PROJECT_THEME_FOLDER --network
         fi
     else
-        echo "wp theme enable $WP_PROJECT_THEME_FOLDER"
-        wp theme enable $WP_PROJECT_THEME_FOLDER
+        echo "installing wp..."
+        wp core install --url=$LOCAL_DEV_DOMAIN --title="$WP_SITE_TITLE" --admin_name=$WP_ADMIN_USER --admin_password=$MYSQL_ROOT_PASSWORD --admin_email=$WP_ADMIN_EMAIL --skip-email
     fi
+
+    echo "wp theme enable $WP_PROJECT_THEME_FOLDER"
+    wp theme enable $WP_PROJECT_THEME_FOLDER
 
     #returning 0 value marks success
     exit 0
-else
-    echo "installing wp..."
-    wp core install --url=$LOCAL_DEV_DOMAIN --title="$WP_SITE_TITLE" --admin_name=$WP_ADMIN_USER --admin_password=$MYSQL_ROOT_PASSWORD --admin_email=$WP_ADMIN_EMAIL --skip-email
 fi
 
 #returning non 0 value marks an error, so the container will start again as it has "restart: on-failure"

@@ -8,7 +8,7 @@ RUN apt-get install -y \
         libmemcached-dev \
     && \
     if [ -n "$http_proxy" ]; then \
-        pecl config-set http_proxy $(echo -n $http_proxy | sed 's/^https:\/\///'); \
+        pecl config-set http_proxy $(echo -n $http_proxy | sed 's/^https\?:\/\///'); \
     fi; \
     pecl install memcached && \
     docker-php-ext-enable memcached ;

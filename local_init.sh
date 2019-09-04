@@ -132,6 +132,18 @@ printf "$GREEN\x00😈 Spinning up nginx and phpmyadmin\n$NC"
 docker-compose up -d nginx phpmyadmin 1>>$LOG_FILE 2>>$LOG_FILE
 check_error $?
 
+printf "$GREEN\x00😈 Checking if NVM is available..\n$NC"
+type -q nvm
+
+if [ $? -ne 0 ]; then
+    if [ "$NVM_DIR" != "" ]; then
+        source "$NVM_DIR/nvm.sh"
+    else
+        echo "Could not find or load NVM.." >> $LOG_FILE
+        check_error 1
+    fi
+fi
+
 printf "$GREEN\x00😈 Install node things and stealing your bank account information\n$NC"
 nvm use 8
 npm i -g npm@6

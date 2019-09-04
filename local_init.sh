@@ -55,7 +55,7 @@ while true; do
 
     printf '.'
 
-    sleep 5
+    sleep 10
 
     if [ $iterations -ge $max_iterations ]; then
         printf "$RED\nMySQL failed to come up after $max_iterations attempts.\n$NC"
@@ -82,7 +82,7 @@ while true; do
 
     printf '.'
 
-    sleep 5
+    sleep 10
 
     if [ $iterations -ge $max_iterations ]; then
         printf "$RED\nWordpress failed to come up after $max_iterations attempts.\n$NC"
@@ -133,7 +133,7 @@ docker-compose up -d nginx phpmyadmin 1>>$LOG_FILE 2>>$LOG_FILE
 check_error $?
 
 printf "$GREEN\x00😈 Checking if NVM is available..\n$NC"
-type -q nvm
+type nvm 1>/dev/null 2>/dev/null
 
 if [ $? -ne 0 ]; then
     if [ "$NVM_DIR" != "" ]; then
@@ -142,6 +142,13 @@ if [ $? -ne 0 ]; then
         echo "Could not find or load NVM.." >> $LOG_FILE
         check_error 1
     fi
+fi
+
+printf "$GREEN\x00😈 Checking if NVM has node 8..\n$NC"
+nvm which 8 1>/dev/null 2>/dev/null
+
+if [ $? -ne 0 ]; then
+    nvm install 8
 fi
 
 printf "$GREEN\x00😈 Install node things and stealing your bank account information\n$NC"

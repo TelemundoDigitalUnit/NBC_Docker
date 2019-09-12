@@ -8,13 +8,6 @@ RUN apt-get update && \
         mariadb-client \
     ;
 
-# RUN useradd foo && \
-#     mkdir /home/foo && \
-#     chown -hR foo:foo /home/foo
-
-# WORKDIR /home/foo
-# USER foo
-
 ENV PATH="/opt/nbc/bin:${PATH}"
 
 # install phpunit (see: https://make.wordpress.org/core/handbook/testing/automated-testing/phpunit/)

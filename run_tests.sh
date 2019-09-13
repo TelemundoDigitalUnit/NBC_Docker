@@ -57,6 +57,7 @@ run_phpunit() {
     docker build \
         -f unit_test.Dockerfile \
         --network="${TEST_NETWORK}" \
+        --build-arg REPO="${REPO}" \
         --build-arg DEFAULT_BRANCH="${DEFAULT_BRANCH}" \
         --build-arg GIT_USER="${GIT_USER}" \
         --build-arg GIT_TOKEN="${GIT_TOKEN}" \

@@ -17,7 +17,7 @@ set -l GREEN "\033[0;32m"
 # check for errors
 function check_error
     if [ $argv -ne 0 ]
-        printf "$RED\x00An error occurred, check $LOG_FILE\n$NC"
+        printf "$RED😈 An error occurred, check $LOG_FILE\n$NC"
         exit
     end
 end
@@ -30,17 +30,17 @@ source $SETUP_PATH/fish/getopts.fish $argv
 
 check_error $status
 
-# Output to the user which project will be built
-printf "$GREEN😈 Compiling project: $PROJECT$NC\n"
-printf "[ this may take a minute ... ]\n"
-
-docker-compose build 1>>$LOG_FILE 2>>$LOG_FILE
+# build and spin up mysql
+printf "$GREEN😈 Building MySQL docker image and starting its container...\n$NC"
+docker-compose up -d --build mysql 1>>$LOG_FILE 2>>$LOG_FILE
 
 check_error $status
 
-# spin up mysql
-printf "$GREEN\x00Spinning up MySQL..\n$NC"
-docker-compose up -d mysql 1>>$LOG_FILE 2>>$LOG_FILE
+# Output to the user which project will be built
+printf "$GREEN😈 Building docker images: $PROJECT$NC\n"
+printf "[ this may take a minute ... ]\n"
+
+docker-compose build 1>>$LOG_FILE 2>>$LOG_FILE
 
 check_error $status
 
@@ -66,7 +66,7 @@ while true
 end
 
 # spin up wordpress
-printf "$GREEN\x00Spinning up Wordpress..\n$NC"
+printf "$GREEN😈 Spinning up Wordpress..\n$NC"
 docker-compose up -d wordpress 1>>$LOG_FILE 2>>$LOG_FILE
 
 check_error $status
@@ -125,6 +125,7 @@ if [ $status -eq 0 ]
 end
 
 printf "$GREEN😈 Installing multi-site support..\n$NC"
+chmod --recursive --quiet a+w wp-container # without this container's user doesn't have enough permissions on linux
 docker-compose run wp-cli 1>>$LOG_FILE 2>>$LOG_FILE
 check_error $status
 

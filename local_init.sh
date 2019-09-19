@@ -30,17 +30,16 @@ source ${SETUP_PATH}/bash/getopts.sh
 
 check_error $?
 
-# Output to the user which project will be built
-printf "$GREEN\x00😈 Compiling project: $PROJECT$NC\n"
-printf "[ this may take a minute ... ]\n"
-
-docker-compose build 1>>$LOG_FILE 2>>$LOG_FILE
+# build and spin up mysql
+printf "$GREEN\x00😈 Building MySQL docker image and starting its container...\n$NC"
+docker-compose up -d --build mysql 1>>$LOG_FILE 2>>$LOG_FILE
 
 check_error $?
 
-# spin up mysql
-printf "$GREEN\x00Spinning up MySQL..\n$NC"
-docker-compose up -d mysql 1>>$LOG_FILE 2>>$LOG_FILE
+# Output to the user which project will be built
+printf "$GREEN\x00😈 Building docker images: $PROJECT$NC\n"
+printf "[ this may take a minute ... ]\n"
+docker-compose build 1>>$LOG_FILE 2>>$LOG_FILE
 
 check_error $?
 
@@ -125,6 +124,7 @@ if [ $? -eq 0 ]; then
 fi
 
 printf "$GREEN\x00😈 Installing multi-site support..\n$NC"
+chmod --recursive --quiet a+w wp-container # without this container's user doesn't have enough permissions on linux
 docker-compose run wp-cli 1>>$LOG_FILE 2>>$LOG_FILE
 check_error $?
 

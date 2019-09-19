@@ -13,6 +13,8 @@ A Docker Container which setups up WordPress with PHP-FPM, Nginx with a self-sig
 
 Here are a list of frameworks you need to have pre-installed on your machine. If you happen to shortcut the installation the local development environment will not run properly.
 
+Note that [Dockerfile.linux](Dockerfile.linux) and [docker-compose.linux.yml](docker-compose.linux.yml) contain an image and service definition for a linux container which you can use as your development environment. The purpose of this is to allow [local_init.sh](local_init.sh) to run on Windows hosts, but you can also use it to avoid installing prerequisites locally. See instructions at top of [docker-compose.linux.yml](docker-compose.linux.yml).
+
 * __Homebrew__
   * ```/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"```
 * __PHP__

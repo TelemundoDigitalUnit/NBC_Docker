@@ -1,0 +1,95 @@
+# see docker-compose.linux.yml
+
+FROM ubuntu:latest
+
+SHELL ["/bin/bash", "-c"]
+
+# This prevents `debconf: unable to initialize frontend: Dialog`, etc.
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update the apt package index
+RUN apt-get update --quiet
+
+# Installing apt-utils first prevents subsequent `debconf: delaying package configuration, since apt-utils is not installed`
+RUN apt-get install -y --quiet apt-utils
+
+# Upgrade system packages
+RUN apt-get upgrade -y --quiet --fix-broken && apt-get clean -y --quiet
+
+# Install curl (needed for nvm, npm, docker-compose, composer)
+RUN apt-get install -y --quiet curl
+
+# Install make (needed for byline-manager plugin)
+RUN apt-get install -y --quiet build-essential
+
+# Install zip and unzip (needed by something in local_init.sh)
+RUN apt-get install -y --quiet zip unzip
+
+# Install git
+RUN apt-get install -y --quiet git && git config --global credential.helper store
+
+# Install PHP (needed for Composer)
+RUN apt-get install -y --quiet php
+
+# Install Composer https://getcomposer.org/doc/faqs/how-to-install-composer-programmatically.md
+RUN curl --fail --silent --show-error --location https://getcomposer.org/installer | php
+RUN mv /composer.phar /usr/local/bin/composer
+
+# Install npm https://github.com/nodesource/distributions/blob/master/README.md#debinstall
+RUN curl --fail --silent --show-error --location https://deb.nodesource.com/setup_12.x | bash
+RUN apt-get install -y --quiet nodejs
+RUN npm config set proxy $http_proxy
+
+# Install node-sass https://www.npmjs.com/package/node-sass
+RUN npm install node-sass
+
+# Install nvm https://github.com/nvm-sh/nvm
+RUN curl --fail --silent --show-error --location https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+RUN source ~/.nvm/nvm.sh && nvm install 8
+
+# Install docker-compose https://docs.docker.com/compose/install/
+RUN curl --fail --silent --show-error --location "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" --output /usr/local/bin/docker-compose
+RUN chmod a+x /usr/local/bin/docker-compose
+
+# https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-using-the-repository
+# Install packages to allow apt to use a repository over HTTPS
+RUN apt-get install -y --quiet apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+# Adding docker's official GPG key
+RUN curl --fail --silent --show-error --location https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+# Adding docker apt repositories
+RUN add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+# Update the apt package index
+RUN apt-get update
+# Install the latest version of Docker Engine
+RUN apt-get install -y --quiet docker-ce docker-ce-cli containerd.io
+# Setting docker daemon proxy https://stackoverflow.com/a/55504083/2407309
+RUN echo "export http_proxy='$http_proxy'" >> /etc/default/docker && echo "export https_proxy='$https_proxy'" >> /etc/default/docker
+RUN mkdir ~/.docker && printf '{"proxies": {"default": {"httpProxy": "%s", "httpsProxy": "%s"}}}' $http_proxy $https_proxy > ~/.docker/config.json
+
+# Install user tools
+RUN apt-get install -y --quiet sudo mlocate vim nano fish
+
+# Which ports need to be published
+EXPOSE 80
+EXPOSE 443
+EXPOSE 3306
+EXPOSE 8889
+EXPOSE 9000
+EXPOSE 11211
+
+# Make necessary files from host available in container
+VOLUME /our
+WORKDIR /our
+COPY .env .
+COPY clean.sh .
+COPY conf ./conf
+COPY docker-compose.yml .
+COPY docker_init.sh .
+COPY local_init.fish .
+COPY local_init.sh .
+COPY setup ./setup
+
+# Make all files known to locate
+RUN updatedb
+
+ENTRYPOINT service docker start && cd /our && bash

@@ -1,3 +1,5 @@
 wp-container
 .logs
 build_log.txt
+.idea
+.data

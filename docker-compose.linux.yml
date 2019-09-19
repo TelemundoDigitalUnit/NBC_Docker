@@ -1,0 +1,50 @@
+#
+# `docker` cannot understand relative paths in Windows when mounting directories as volumes, but `docker-compose` can.
+# However, containers in the container that is started with `docker-compose` cannot access the Internet due to proxy issues.
+#
+# * to build the image:
+#   docker-compose --file docker-compose.linux.yml build
+#
+# * to run the container (this has a hardcoded volume path which you need to change to accommodate your system because docker doesn't understand relative paths in Windows):
+#   docker run --name linux --interactive --tty --privileged --env-file .env --publish 0.0.0.0:80:80/tcp --publish 0.0.0.0:443:443/tcp --publish 0.0.0.0:3306:3306/tcp --publish 0.0.0.0:8889:8889/tcp --publish 0.0.0.0:11211:11211/tcp --publish 0.0.0.0:9000:9000/tcp --volume c:/wp-container:/our/wp-container --rm --detach linux
+# * to open a new shell in the running container:
+#   docker exec --interactive --tty --privileged linux bash
+# * to stop the container
+#   docker stop linux
+#
+# * to bring up the container (this way nested containers have proxy problems, I'd like to figure out why):
+#   docker-compose --file docker-compose.linux.yml up --detach
+# * to open a new shell in running container:
+#   docker-compose --file docker-compose.linux.yml exec linux bash
+# * to stop the container:
+#   docker-compose --file docker-compose.linux.yml down
+# * possibly relevant:
+#   "The host networking driver only works on Linux hosts, and is not supported on Docker Desktop for Mac, Docker Desktop for Windows, or Docker EE for Windows Server." https://docs.docker.com/network/network-tutorial-host/#prerequisites
+#
+version: '3.7'
+services:
+    linux:
+        container_name: linux
+        image: linux
+        privileged: true # "This flag exists to allow special use-cases, like running Docker within Docker." https://docs.docker.com/v17.12/engine/reference/commandline/run/#full-container-capabilities-privileged
+        tty: true
+        stdin_open: true
+        volumes:
+            - /wp-container:/our/wp-container
+        env_file:
+            - .env
+        build:
+            context: .
+            dockerfile: Dockerfile.linux
+        ports:
+            - '80:80'
+            - '443:443'
+            - '3306:3306'
+            - '8889:8889'
+            - '11211:11211'
+            - '9000:9000'
+        networks:
+            - linux
+networks:
+    linux:
+        name: linux

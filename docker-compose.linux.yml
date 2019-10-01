@@ -5,8 +5,8 @@
 # * to build the image:
 #   docker-compose --file docker-compose.linux.yml build
 #
-# * to run the container (this has a hardcoded volume path which you need to change to accommodate your system because docker doesn't understand relative paths in Windows):
-#   docker run --name linux --interactive --tty --privileged --env-file .env --publish 0.0.0.0:80:80/tcp --publish 0.0.0.0:443:443/tcp --publish 0.0.0.0:3306:3306/tcp --publish 0.0.0.0:8889:8889/tcp --publish 0.0.0.0:11211:11211/tcp --publish 0.0.0.0:9000:9000/tcp --volume c:/wp-container:/our/wp-container --rm --detach linux
+# * to run the container:
+#   docker run --name linux --interactive --tty --privileged --env-file .env --publish 0.0.0.0:22:22/tcp --publish 0.0.0.0:80:80/tcp --publish 0.0.0.0:443:443/tcp --publish 0.0.0.0:3306:3306/tcp --publish 0.0.0.0:8889:8889/tcp --publish 0.0.0.0:11211:11211/tcp --publish 0.0.0.0:9000:9000/tcp --detach linux
 # * to open a new shell in the running container:
 #   docker exec --interactive --tty --privileged linux bash
 # * to stop the container
@@ -29,14 +29,15 @@ services:
         privileged: true # "This flag exists to allow special use-cases, like running Docker within Docker." https://docs.docker.com/v17.12/engine/reference/commandline/run/#full-container-capabilities-privileged
         tty: true
         stdin_open: true
-        volumes:
-            - /wp-container:/our/wp-container
+#        volumes:
+#            - /wp-container:/our/wp-container
         env_file:
             - .env
         build:
             context: .
             dockerfile: Dockerfile.linux
         ports:
+            - '22:22'
             - '80:80'
             - '443:443'
             - '3306:3306'

@@ -29,7 +29,7 @@ RUN apt-get install -y --quiet zip unzip
 RUN apt-get install -y --quiet git && git config --global credential.helper store
 
 # Install PHP (needed for Composer)
-RUN apt-get install -y --quiet php
+RUN apt-get install -y --quiet software-properties-common && add-apt-repository ppa:ondrej/php && apt-get update && apt-get install -y --quiet php7.3
 
 # Install Composer https://getcomposer.org/doc/faqs/how-to-install-composer-programmatically.md
 RUN curl --fail --silent --show-error --location https://getcomposer.org/installer | php
@@ -48,8 +48,7 @@ RUN curl --fail --silent --show-error --location https://raw.githubusercontent.c
 RUN source ~/.nvm/nvm.sh && nvm install 8
 
 # Install docker-compose https://docs.docker.com/compose/install/
-RUN curl --fail --silent --show-error --location "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" --output /usr/local/bin/docker-compose
-RUN chmod a+x /usr/local/bin/docker-compose
+RUN curl --fail --silent --show-error --location "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" --output /usr/local/bin/docker-compose && chmod a+x /usr/local/bin/docker-compose
 
 # https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-using-the-repository
 # Install packages to allow apt to use a repository over HTTPS
@@ -69,7 +68,19 @@ RUN mkdir ~/.docker && printf '{"proxies": {"default": {"httpProxy": "%s", "http
 # Install user tools
 RUN apt-get install -y --quiet sudo mlocate vim nano fish
 
+#VOLUME /our
+
+# Install WordPress etc (php-curl is required for wp cli update)
+RUN apt-get install -y --quiet php7.3-curl phpmyadmin mariadb-client mariadb-server
+RUN curl --fail --silent --show-error --location https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output /usr/local/bin/wp && chmod a+x /usr/local/bin/wp && wp cli update
+WORKDIR /our/wp-container
+RUN wp core download --allow-root
+
+# Install ssh server
+RUN apt-get install --quiet -y ssh openssh-server
+
 # Which ports need to be published
+EXPOSE 22
 EXPOSE 80
 EXPOSE 443
 EXPOSE 3306
@@ -78,7 +89,6 @@ EXPOSE 9000
 EXPOSE 11211
 
 # Make necessary files from host available in container
-VOLUME /our
 WORKDIR /our
 COPY .env .
 COPY clean.sh .
@@ -89,7 +99,10 @@ COPY local_init.fish .
 COPY local_init.sh .
 COPY setup ./setup
 
+# Allow user to log in as root via SSH
+RUN mkdir ~/.ssh && cat conf/public_key.pub >> ~/.ssh/authorized_keys
+
 # Make all files known to locate
 RUN updatedb
 
-ENTRYPOINT service docker start && cd /our && bash
+ENTRYPOINT service docker start && service mysql start && service ssh start && cd /our && bash

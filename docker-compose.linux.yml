@@ -11,6 +11,8 @@
 #   docker exec --interactive --tty --privileged linux bash
 # * to stop the container
 #   docker stop linux
+# * to start previous stopped container
+#   docker start linux
 #
 # * to bring up the container (this way nested containers have proxy problems, I'd like to figure out why):
 #   docker-compose --file docker-compose.linux.yml up --detach

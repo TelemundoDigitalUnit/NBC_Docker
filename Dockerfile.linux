@@ -84,4 +84,4 @@ COPY conf/nginx/nginx.conf /etc/nginx/sites-available/default
 COPY conf/php.ini /usr/local/etc/php/conf.d/wp.ini
 COPY local_init.linux.sh local_init.linux.sh
 
-ENTRYPOINT set -a source .env && service mysql start && service ssh start && service php7.3-fpm start && service nginx start && cd /our && bash
+ENTRYPOINT set -a source .env && set -a source /root/.nvm/nvm.sh && service mysql start && service ssh start && service php7.3-fpm start && service nginx start && cd /our && bash

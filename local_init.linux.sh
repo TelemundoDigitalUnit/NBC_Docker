@@ -9,6 +9,10 @@
 #
 # Delete the wp-content directory if you want a fresh clone.
 
+source .env
+
+source /root/.nvm/nvm.sh
+
 mysql -e"create database wordpress; create user wordpress identified by 'wordpress'; grant all privileges on wordpress.* to wordpress@'%' with grant option; flush privileges;";
 
 # This requires mysql to be running.

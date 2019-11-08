@@ -14,8 +14,10 @@ mysql -e"create database wordpress; create user wordpress identified by 'wordpre
 # This requires mysql to be running.
 cd /our/wp-container && wp config create --dbname=wordpress --dbuser=wordpress --dbpass=wordpress --dbcharset=utf8mb4 --allow-root --extra-php="define( 'GUTENBERG_USE_PLUGIN', true );"
 
+# If we clone wp-content before running this, we get errors about missing wp_options table.
 cd /our/wp-container && wp core multisite-install --url="$LOCAL_DEV_DOMAIN" --title="$WP_SITE_TITLE" --admin_user="$WP_ADMIN_USER" --admin_password="$WP_ADMIN_PASSWORD" --admin_email="$WP_ADMIN_EMAIL" --skip-email --skip-themes --allow-root
 
+# Multisite install creates wp-content/uploads so we need to delete wp-content if there's nothing else there.
 if [ ! -d /our/wp-container/wp-content/mu-plugins ]
 then
     rm -rf /our/wp-container/wp-content

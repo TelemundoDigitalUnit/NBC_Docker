@@ -42,7 +42,7 @@ RUN apt-get update && apt-get install -y --quiet sudo mlocate vim nano fish && a
 # https://stackoverflow.com/a/33874050/2407309
 # https://stackoverflow.com/a/10094496/2407309
 RUN curl --fail --silent --show-error --location https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.1/install.sh | bash
-RUN source ~/.nvm/nvm.sh && nvm install 8
+RUN source ~/.nvm/nvm.sh && nvm install 8 && nvm use 8
 
 # Install npm https://github.com/nodesource/distributions/blob/master/README.md#debinstall
 RUN curl --fail --silent --show-error --location https://deb.nodesource.com/setup_13.x | bash
@@ -61,7 +61,9 @@ RUN mv /composer.phar /usr/local/bin/composer
 
 # Install WordPress etc (php-curl is required for wp cli update)
 WORKDIR /our/wp-container
-RUN curl --fail --silent --show-error --location https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output /usr/local/bin/wp && chmod a+x /usr/local/bin/wp && wp cli update && wp core download --allow-root --skip-themes --skip-content && rm -rf wp-content
+RUN curl --fail --silent --show-error --location https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output /usr/local/bin/wp && chmod a+x /usr/local/bin/wp && wp cli update && wp core download --allow-root --skip-themes --skip-content --version=5.2.4 && rm -rf wp-content
+
+RUN apt-get update && apt-get install -y --quiet yarn && apt-get clean
 
 # Which ports need to be published
 EXPOSE 22

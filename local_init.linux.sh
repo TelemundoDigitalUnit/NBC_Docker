@@ -32,10 +32,11 @@ fi
 cd /our/wp-container && wp theme activate nbc-station --allow-root
 
 cd /our/wp-container/wp-content && composer install
-
 cd /our/wp-container/wp-content/mu-plugins && composer install
 
-cd /our/wp-container/wp-content/themes/nbc-station && nvm use 8 && npm i -g npm@6
+cd /our/wp-container/wp-content/themes/nbc-station && nvm use 8 && npm install --quiet npm@6 && npm run build
+cd /our/wp-container/wp-content/plugins/nbc-library && npm install --quiet npm@6 && npm run build
+cd /our/wp-container/wp-content/plugins/byline-manager && npm install --quiet npm@6 && npm run build
 
 apt-get update && apt-get install -y --quiet phpmyadmin && apt-get clean
 

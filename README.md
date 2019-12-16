@@ -44,9 +44,13 @@ Here are a list of frameworks you need to have pre-installed on your machine. If
 1. Start Docker Desktop and wait till the status reads `Docker Desktop is running`
 2. In Terminal, run the following command:
 ```./local_init.sh```
-3. Once setup has been completed, visit `http://localhost/wp-admin` on your browser and sign in using credentials stored inside of the `.env` file.
-4. Activate the NBC Theme.
-5. All your work should be within the `wp-content` folder. __DO NOT__ commit to the main Docker Container repository.
+3. Once setup has been completed, add this line above `require_once( ABSPATH . 'wp-settings.php' );` in your `wp-config.php`:
+
+`require_once( ABSPATH . 'wp-content/vip-config/vip-config.php' );`
+
+4. Visit `http://localhost/wp-admin` on your browser and sign in using credentials stored inside of the `.env` file.
+5. Activate the [NBC Theme](#enable-theme/wp-plugin-error).
+6. All your work should be within the `wp-content` folder. __DO NOT__ commit to the main Docker Container repository.
 
 
 ## Troubleshooting
@@ -59,6 +63,19 @@ Run the following commands to ensure orphaned containers are removed.
 docker-compose down --remove-orphans
 docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
+```
+
+### Enable theme/WP Plugin error
+
+If you get an error similar to:
+
+`Uncaught Error: Call to undefined function NBC\get_site_host() ...`
+
+It's likely the `nbc-station` theme didn't get activated. Run this to fix:
+
+```
+docker-compose run wp-cli theme enable nbc-station --network
+docker-compose run wp-cli theme activate nbc-station
 ```
 
 ## Questions?

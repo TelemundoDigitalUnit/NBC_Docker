@@ -49,7 +49,7 @@ Here are a list of frameworks you need to have pre-installed on your machine. If
 `require_once( ABSPATH . 'wp-content/vip-config/vip-config.php' );`
 
 4. Visit `http://localhost/wp-admin` on your browser and sign in using credentials stored inside of the `.env` file.
-5. Activate the [NBC Theme](#enable-theme/wp-plugin-error).
+5. Activate the [NBC Theme](#enable-themewp-plugin-error).
 6. All your work should be within the `wp-content` folder. __DO NOT__ commit to the main Docker Container repository.
 
 

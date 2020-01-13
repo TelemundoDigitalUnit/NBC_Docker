@@ -101,6 +101,8 @@ if [ "$PROJECT" = "" -o "$PROJECT" = "main" ]; then
     PROJECT_REPOSITORY_SSH_URL=https://github.com/wpcomvip/nbcots.git
 elif [ "$PROJECT" = "lx" -o "$PROJECT" = "localx" ]; then
     PROJECT_REPOSITORY_SSH_URL=https://github.com/wpcomvip/nbcotslx.git
+elif [ "$PROJECT" = "microsite" ]; then
+    PROJECT_REPOSITORY_SSH_URL=https://github.com/wpcomvip/nbcots-microsites.git
 fi
 
 printf "$GREEN\x00😈 Replacing it with our VIP NBCOTS Repository$NC\n"

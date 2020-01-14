@@ -1,3 +1,4 @@
 wp-container
 .logs
 build_log.txt
+.vscode/

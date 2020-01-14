@@ -42,7 +42,7 @@ services:
 
     nginx:
         container_name: nbc-wp-nginx
-        depends_on: 
+        depends_on:
             - wordpress
             - memcached
         image: nginx:alpine

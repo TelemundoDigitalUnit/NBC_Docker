@@ -1,0 +1,61 @@
+version: '3'
+services:
+    mysql:
+        container_name: nbc-wp-mysql-lx
+        volumes:
+            - db-lx:/var/lib/mysql
+            - .logs/mysql-lx:/var/log/mysql
+        networks:
+            - nbc-wp-lx
+        ports:
+            - 33307:3306
+
+    wordpress:
+        container_name: nbc-wp-php-lx
+        volumes:
+            - ./wp-container-lx:/var/www/html
+        networks:
+            - nbc-wp-lx
+    nginx:
+        container_name: nbc-wp-nginx
+        ports:
+            - '81:80'
+            - '444:443'
+        volumes:
+            - ./wp-container-lx:/var/www/html
+            - .logs/nginx-lx:/var/log/nginx
+        networks:
+            - nbc-wp-lx
+
+    memcached:
+        container_name: nbc-wp-memcached-lx
+        ports:
+            - '11212:11211'
+
+    wp-cli:
+        container_name: nbc-wp-cli-lx
+        volumes:
+            - ./wp-container-lx:/var/www/html
+        command: /var/www/html/init.sh
+        depends_on:
+            - mysql
+            - wordpress
+        environment:
+            LOCAL_DEV_DOMAIN: 127.0.0.1:81
+        networks:
+            - nbc-wp-lx
+
+    phpmyadmin:
+        container_name: nbc-wp-phpmyadmin-lx
+        ports:
+            - '8890:80'
+        networks:
+            - nbc-wp-lx
+
+networks:
+    nbc-wp-lx:
+
+volumes:
+    db-lx:
+    logs-lx:
+    wp-container-lx:

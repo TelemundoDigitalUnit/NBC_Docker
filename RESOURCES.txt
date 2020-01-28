@@ -1,0 +1,4 @@
+https://dev.to/brpaz/ensure-the-quality-of-your-docker-images-with-these-cool-tools-1bh7
+https://github.com/aelsabbahy/goss/tree/master/extras/dgoss
+https://github.com/aelsabbahy/dgoss-examples/blob/master/nginx/goss.yaml
+

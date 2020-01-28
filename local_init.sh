@@ -14,7 +14,14 @@ NC="\033[0m" # No Color
 RED="\033[0;31m"
 GREEN="\033[0;32m"
 
-# check for errors
+function docker_compose() {
+    docker-compose \
+        -f docker-compose.yml \
+        -f docker-compose.lx.yml \
+        -f docker-compose.microsites.yml \
+        $@ ;
+}
+
 function check_error () {
     if [ $1 -ne 0 ]; then
         printf "$RED\x00An error occurred, check $LOG_FILE\n$NC"
@@ -22,147 +29,219 @@ function check_error () {
     fi
 }
 
-# clear the error log
-echo -n > $LOG_FILE
+function clear_error_log() {
+    # clear the error log
+    echo -n > $LOG_FILE
+}
 
-# Get parameters
-source ${SETUP_PATH}/bash/getopts.sh
+function build_projects() {
+    # builds the project
+    docker_compose \
+        build \
+        1>>$LOG_FILE \
+        2>>$LOG_FILE
+}
 
-check_error $?
+function spin_up_mysql() {
+    CONTAINER_NAME=$1
 
-# Output to the user which project will be built
-printf "$GREEN\x00😈 Compiling project: $PROJECT$NC\n"
-printf "[ this may take a minute ... ]\n"
+    # spin up mysql
+    printf "$GREEN\x00Spinning up $CONTAINER_NAME..\n$NC"
+    docker_compose up -d $CONTAINER_NAME 1>>$LOG_FILE 2>>$LOG_FILE
 
-docker-compose build 1>>$LOG_FILE 2>>$LOG_FILE
+    check_error $?
 
-check_error $?
+    # wait for mysql to be "ready"
+    iterations=1
+    while true; do
+        docker_compose exec $CONTAINER_NAME /bin/sh -c "mysqlshow -p\$MYSQL_ROOT_PASSWORD" 1>>$LOG_FILE 2>>$LOG_FILE
 
-# spin up mysql
-printf "$GREEN\x00Spinning up MySQL..\n$NC"
-docker-compose up -d mysql 1>>$LOG_FILE 2>>$LOG_FILE
+        if [ $? -eq 0 ]; then
+            break
+        fi
 
-check_error $?
+        printf '.'
 
-# wait for mysql to be "ready"
-iterations=1
-while true; do
-    docker-compose exec mysql /bin/sh -c "mysqlshow -p\$MYSQL_ROOT_PASSWORD" 1>>$LOG_FILE 2>>$LOG_FILE
+        sleep 10
 
+        if [ $iterations -ge $max_iterations ]; then
+            printf "$RED\n$CONTAINER_NAME failed to come up after $max_iterations attempts.\n$NC"
+            check_error 1
+        fi
+
+        iterations=$(expr $iterations + 1)
+    done;
+}
+
+function spin_up_wordpress() {
+    CONTAINER_NAME=$1
+    CONTAINER_FOLDER=$2
+
+    # spin up wordpress
+    printf "$GREEN\x00Spinning up $CONTAINER_NAME..\n$NC"
+    docker_compose up -d $CONTAINER_NAME 1>>$LOG_FILE 2>>$LOG_FILE
+
+    check_error $?
+
+    # wait for wordpress to be "ready"
+    iterations=1
+    while true; do
+        docker_compose exec $CONTAINER_NAME /bin/sh -c "env SCRIPT_NAME=/var/www/html/wp-admin/index.php SCRIPT_FILENAME=/var/www/html/wp-admin/index.php REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000" 1>>$LOG_FILE 2>>$LOG_FILE
+
+        printf "$GREEN\x00Checking if \"${CONTAINER_FOLDER}/wp-content/themes\" exists..\n$NC"
+        if [ $? -eq 0 -a -e "${CONTAINER_FOLDER}/wp-content/themes" ]; then
+            break
+        fi
+
+        printf '.'
+
+        sleep 10
+
+        if [ $iterations -ge $max_iterations ]; then
+            printf "$RED\n$CONTAINER_NAME failed to come up after $max_iterations attempts.\n$NC"
+            check_error 1
+        fi
+
+        iterations=$(expr $iterations + 1)
+    done
+}
+
+function get_project_respository() {
+    PROJECT=$1
+
+    if [ "$PROJECT" = "" -o "$PROJECT" = "main" ]; then
+        echo https://github.com/wpcomvip/nbcots.git
+    elif [ "$PROJECT" = "lx" -o "$PROJECT" = "localx" ]; then
+        echo https://github.com/wpcomvip/nbcotslx.git
+    elif [ "$PROJECT" = "microsites" ]; then
+        echo https://github.com/wpcomvip/nbcots-microsites.git
+    fi
+}
+
+function clone_repo() {
+    OUTPUT_PATH=$1
+    REPOSITORY_URL=$2
+
+    printf "$GREEN\x00😈 ls -lah \"$OUTPUT_PATH/wp-content/\" ...$NC\n"
+    ls -lah $OUTPUT_PATH/wp-content/
+
+    printf "$GREEN\x00😈 Cloning \"$REPOSITORY_URL\" to \"$OUTPUT_PATH/wp-content/\" ...$NC\n"
+    printf "[ this may take a minute ... ]\n"
+    git clone $REPOSITORY_URL $OUTPUT_PATH/wp-content/ --branch master --recurse-submodules 1>>$LOG_FILE 2>>$LOG_FILE
+
+    check_error $?
+
+    printf "$GREEN\x00😈 Pulling VIP MU Plugins\n$NC"
+    printf "[ this may take a minute ... ]\n"
+    git clone --recurse-submodules https://github.com/Automattic/vip-go-mu-plugins-built $OUTPUT_PATH/wp-content/mu-plugins 1>>$LOG_FILE 2>>$LOG_FILE
+
+    check_error $?
+
+    command -v composer 1>>$LOG_FILE 2>>$LOG_FILE
     if [ $? -eq 0 ]; then
-        break
+        pushd "$OUTPUT_PATH/wp-content"
+            printf "$GREEN\x00😈 Installing composer depedencies...\n$NC"
+            composer install --no-ansi --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
+        popd
+    fi
+}
+
+function install_multisite() {
+    CONTAINER_NAME=$1
+
+    printf "$GREEN\x00😈 Installing multi-site support..\n$NC"
+    docker_compose run $CONTAINER_NAME 1>>$LOG_FILE 2>>$LOG_FILE
+    check_error $?
+}
+
+function spin_up_nginx() {
+    printf "$GREEN\x00😈 Spinning up nginx and phpmyadmin\n$NC"
+    docker_compose up -d \
+        nginx phpmyadmin \
+        nginx-lx phpmyadmin-lx \
+        nginx-microsites phpmyadmin-microsites \
+        1>>$LOG_FILE 2>>$LOG_FILE \
+    ;
+    check_error $?
+}
+
+function nvm_setup() {
+    printf "$GREEN\x00😈 Checking if NVM is available..\n$NC"
+    type nvm 1>/dev/null 2>/dev/null
+
+    if [ $? -ne 0 ]; then
+        if [ "$NVM_DIR" != "" ]; then
+            source "$NVM_DIR/nvm.sh"
+        else
+            echo "Could not find or load NVM.." >> $LOG_FILE
+            check_error 1
+        fi
     fi
 
-    printf '.'
+    printf "$GREEN\x00😈 Checking if NVM has node 8..\n$NC"
+    nvm which 8 1>/dev/null 2>/dev/null
 
-    sleep 10
-
-    if [ $iterations -ge $max_iterations ]; then
-        printf "$RED\nMySQL failed to come up after $max_iterations attempts.\n$NC"
-        check_error 1
+    if [ $? -ne 0 ]; then
+        nvm install 8
     fi
 
-    iterations=$(expr $iterations + 1)
-done;
+    nvm use 8
+    npm i -g npm@6
+}
 
-# spin up wordpress
-printf "$GREEN\x00Spinning up Wordpress..\n$NC"
-docker-compose up -d wordpress 1>>$LOG_FILE 2>>$LOG_FILE
+function install_wp_core() {
+    CONTAINER_NAME=$1
+    docker_compose run $CONTAINER_NAME wp core download
+    check_error $?
+}
 
-check_error $?
+function main () {
+    clear_error_log
 
-# wait for wordpress to be "ready"
-iterations=1
-while true; do
-    docker-compose exec wordpress /bin/sh -c "env SCRIPT_NAME=/var/www/html/wp-admin/index.php SCRIPT_FILENAME=/var/www/html/wp-admin/index.php REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000" 1>>$LOG_FILE 2>>$LOG_FILE
+    printf "$GREEN\x00😈 Compiling projects: $PROJECT$NC\n"
+    printf "[ this may take a minute ... ]\n"
 
-    if [ $? -eq 0 ]; then
-        break
-    fi
+    build_projects
 
-    printf '.'
+    check_error $?
 
-    sleep 10
+    spin_up_mysql mysql
+    spin_up_mysql mysql-lx
+    spin_up_mysql mysql-microsites
 
-    if [ $iterations -ge $max_iterations ]; then
-        printf "$RED\nWordpress failed to come up after $max_iterations attempts.\n$NC"
-        check_error 1
-    fi
+    install_wp_core wp-cli
+    install_wp_core wp-cli-lx
+    install_wp_core wp-cli-microsites
 
-    iterations=$(expr $iterations + 1)
-done
+    printf "$GREEN\x00😈 Removing WordPress wp-content folder$NC\n"
+    rm -Rf \
+        ./wp-container/wp-content \
+        ./wp-container-lx/wp-content \
+        ./wp-container-microsites/wp-content \
+    ;
 
-printf "$GREEN\x00😈 Removing WordPress wp-content folder$NC\n"
-rm -Rf wp-container/wp-content
+    clone_repo ./wp-container $(get_project_respository main)
+    clone_repo ./wp-container-lx $(get_project_respository lx)
+    clone_repo ./wp-container-microsites $(get_project_respository microsites)
 
-PROJECT_REPOSITORY_SSH_URL=""
+    spin_up_wordpress wordpress ./wp-container
+    spin_up_wordpress wordpress-lx ./wp-container-lx
+    spin_up_wordpress wordpress-microsites ./wp-container-microsites
 
-if [ "$PROJECT" = "" -o "$PROJECT" = "main" ]; then
-    PROJECT_REPOSITORY_SSH_URL=https://github.com/wpcomvip/nbcots.git
-elif [ "$PROJECT" = "lx" -o "$PROJECT" = "localx" ]; then
-    PROJECT_REPOSITORY_SSH_URL=https://github.com/wpcomvip/nbcotslx.git
-elif [ "$PROJECT" = "microsite" ]; then
-    PROJECT_REPOSITORY_SSH_URL=https://github.com/wpcomvip/nbcots-microsites.git
-fi
+    install_multisite wp-cli
+    install_multisite wp-cli-lx
+    install_multisite wp-cli-microsites
 
-printf "$GREEN\x00😈 Replacing it with our VIP NBCOTS Repository$NC\n"
-printf "Repo URL: %s\nBranch: %s\n" $PROJECT_REPOSITORY_SSH_URL $DEFAULT_BRANCH
-printf "[ this may take a minute ... ]\n"
-git clone $PROJECT_REPOSITORY_SSH_URL wp-container/wp-content/ --branch $DEFAULT_BRANCH --recurse-submodules 1>>$LOG_FILE 2>>$LOG_FILE
+    spin_up_nginx
 
-check_error $?
+    # nvm_setup
 
-printf "$GREEN\x00😈 Pulling VIP MU Plugins\n$NC"
-printf "[ this may take a minute ... ]\n"
-git clone --recurse-submodules https://github.com/Automattic/vip-go-mu-plugins-built wp-container/wp-content/mu-plugins 1>>$LOG_FILE 2>>$LOG_FILE
+    printf "$GREEN\x00😈 Building Themes..\n$NC"
+    source $SETUP_PATH/bash/main.sh
+    source $SETUP_PATH/bash/lx.sh
+    source $SETUP_PATH/bash/microsites.sh
 
-check_error $?
+    printf "$GREEN\x00😈 Done..\n$NC"
+}
 
-command -v composer 1>>$LOG_FILE 2>>$LOG_FILE
-if [ $? -eq 0 ]; then
-    pushd "$BASE_SCRIPT_PATH/wp-container/wp-content"
-        printf "$GREEN\x00😈 Building composer. Honeslty have no idea what this is for.\n$NC"
-        composer install --no-ansi --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
-    popd
-fi
-
-printf "$GREEN\x00😈 Installing multi-site support..\n$NC"
-docker-compose run wp-cli 1>>$LOG_FILE 2>>$LOG_FILE
-check_error $?
-
-printf "$GREEN\x00😈 Spinning up nginx and phpmyadmin\n$NC"
-docker-compose up -d nginx phpmyadmin 1>>$LOG_FILE 2>>$LOG_FILE
-check_error $?
-
-printf "$GREEN\x00😈 Checking if NVM is available..\n$NC"
-type nvm 1>/dev/null 2>/dev/null
-
-if [ $? -ne 0 ]; then
-    if [ "$NVM_DIR" != "" ]; then
-        source "$NVM_DIR/nvm.sh"
-    else
-        echo "Could not find or load NVM.." >> $LOG_FILE
-        check_error 1
-    fi
-fi
-
-printf "$GREEN\x00😈 Checking if NVM has node 8..\n$NC"
-nvm which 8 1>/dev/null 2>/dev/null
-
-if [ $? -ne 0 ]; then
-    nvm install 8
-fi
-
-printf "$GREEN\x00😈 Install node things and stealing your bank account information\n$NC"
-nvm use 8
-npm i -g npm@6
-
-if [ "$SETUP_SCRIPT" != "" -a -e "$SETUP_SCRIPT" ]; then
-    source "$SETUP_SCRIPT"
-elif [ -e "$SETUP_PATH/bash/$PROJECT.sh" ]; then
-    source "$SETUP_PATH/bash/$PROJECT.sh"
-elif [ -e "$SETUP_PATH/generic/$PROJECT.sh" ]; then
-    source "$SETUP_PATH/generic/$PROJECT.sh"
-fi
-
-printf "$GREEN\x00😈 Done. Maybe..\n$NC"
+main

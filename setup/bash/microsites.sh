@@ -3,8 +3,6 @@ BUILD_PLUGINS=(
 )
 BUILD_THEMES=(
     nbc-parallax
-    project-innovation
-    supporting-our-schools
 )
 
 for plugin in ${BUILD_PLUGINS[*]}

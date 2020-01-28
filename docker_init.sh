@@ -20,7 +20,7 @@ if ! $(wp core is-installed); then
         wp core install --url=$LOCAL_DEV_DOMAIN --title="$WP_SITE_TITLE" --admin_name=$WP_ADMIN_USER --admin_password=$MYSQL_ROOT_PASSWORD --admin_email=$WP_ADMIN_EMAIL --skip-email
     fi
 
-    if [ -d "$WP_PROJECT_THEME_FOLDER" ];
+    if [ -d "wp-content/themes/${WP_PROJECT_THEME_FOLDER}" ];
     then
         echo "wp theme enable $WP_PROJECT_THEME_FOLDER"
         wp theme enable $WP_PROJECT_THEME_FOLDER --network --activate

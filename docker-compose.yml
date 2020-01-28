@@ -1,5 +1,6 @@
 version: '3'
 services:
+    # https://github.com/wpcomvip/nbcots/
     mysql:
         container_name: nbc-wp-mysql
         environment:
@@ -25,6 +26,7 @@ services:
             - mysql
         environment:
             WORDPRESS_DB_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
+            WORDPRESS_CONFIG_EXTRA: require_once( ABSPATH . 'wp-content/vip-config/vip-config.php' );
         image: nbc-wordpress
         build:
             context: ./setup/docker/wordpress
@@ -75,9 +77,6 @@ services:
             - ./wp-container:/var/www/html
             - ./docker_init.sh:/var/www/html/init.sh
         command: /var/www/html/init.sh
-        depends_on:
-            - mysql
-            - wordpress
         environment:
             MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
             LOCAL_DEV_DOMAIN: $LOCAL_DEV_DOMAIN
@@ -87,7 +86,7 @@ services:
             WP_ADMIN_EMAIL: $WP_ADMIN_EMAIL
             WP_IS_MULTISITE: $WP_IS_MULTISITE
             WP_IS_MULTISITE_SUBDOMAIN: $WP_IS_MULTISITE_SUBDOMAIN
-            WP_PROJECT_THEME_FOLDER: $WP_PROJECT_THEME_FOLDER
+            WP_PROJECT_THEME_FOLDER: nbc-station
         networks:
             - nbc-wp
 

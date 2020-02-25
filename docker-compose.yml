@@ -68,6 +68,8 @@ services:
         restart: always
         ports:
             - '11211:11211'
+        networks:
+            - nbc-wp
 
     wp-cli:
         container_name: nbc-wp-cli

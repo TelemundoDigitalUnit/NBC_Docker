@@ -195,6 +195,10 @@ function install_wp_core() {
     check_error $?
 }
 
+function add_object_cache() {
+    wget -q -O $1/wp-content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
+}
+
 function main () {
     clear_error_log
 
@@ -223,6 +227,10 @@ function main () {
     clone_repo ./wp-container $(get_project_respository main)
     clone_repo ./wp-container-lx $(get_project_respository lx)
     clone_repo ./wp-container-microsites $(get_project_respository microsites)
+
+    add_object_cache ./wp-container
+    add_object_cache ./wp-container-lx
+    add_object_cache ./wp-container-microsites
 
     spin_up_wordpress wordpress ./wp-container
     spin_up_wordpress wordpress-lx ./wp-container-lx

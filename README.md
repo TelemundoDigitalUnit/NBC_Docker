@@ -23,8 +23,8 @@ Typically it can take 1-5minutes for MySQL to be ready, the NGINX and WordPress 
 
 # Troubles?
 
-Open an [issue|https://github.com/TelemundoDigitalUnit/NBC_Docker/issues] in GitHub.
+Open an [issue](https://github.com/TelemundoDigitalUnit/NBC_Docker/issues) in GitHub.
 
 # Looking for the old README?
 
-The old README is still here: [README.old.md|https://github.com/TelemundoDigitalUnit/NBC_Docker/blob/master/README.old.md]
+The old README is still here: [README.old.md](https://github.com/TelemundoDigitalUnit/NBC_Docker/blob/master/README.old.md)

@@ -18,7 +18,7 @@ RUN apt-get install -y \
 
 # install composer
 RUN EXPECTED_CHECKSUM="$(curl -Ls https://composer.github.io/installer.sig)" \
-    && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && curl -o composer-setup.php https://getcomposer.org/installer \
     && ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")" \
     && if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]; then \
         >&2 echo 'ERROR: Invalid installer checksum' \

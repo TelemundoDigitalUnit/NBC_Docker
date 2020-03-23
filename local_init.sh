@@ -228,10 +228,6 @@ function main () {
     clone_repo ./wp-container-lx $(get_project_respository lx)
     clone_repo ./wp-container-microsites $(get_project_respository microsites)
 
-    add_object_cache ./wp-container
-    add_object_cache ./wp-container-lx
-    add_object_cache ./wp-container-microsites
-
     spin_up_wordpress wordpress ./wp-container
     spin_up_wordpress wordpress-lx ./wp-container-lx
     spin_up_wordpress wordpress-microsites ./wp-container-microsites
@@ -241,6 +237,10 @@ function main () {
     install_multisite wp-cli-microsites
 
     spin_up_nginx
+
+    add_object_cache ./wp-container
+    add_object_cache ./wp-container-lx
+    add_object_cache ./wp-container-microsites
 
     # nvm_setup
 

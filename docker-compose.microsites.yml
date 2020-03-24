@@ -72,7 +72,10 @@ services:
 
     wp-cli-microsites:
         container_name: nbc-wp-cli-microsites
-        image: wordpress:cli
+        image: nbc-wordpress:cli
+        build:
+            context: ./setup/docker/wordpress
+            dockerfile: wordpress-cli.Dockerfile
         restart: on-failure
         volumes:
             - ./wp-container-microsites:/var/www/html

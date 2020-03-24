@@ -72,7 +72,10 @@ services:
 
     wp-cli-lx:
         container_name: nbc-wp-cli-lx
-        image: wordpress:cli
+        image: nbc-wordpress:cli
+        build:
+            context: ./setup/docker/wordpress
+            dockerfile: wordpress-cli.Dockerfile
         restart: on-failure
         volumes:
             - ./wp-container-lx:/var/www/html

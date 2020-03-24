@@ -73,7 +73,10 @@ services:
 
     wp-cli:
         container_name: nbc-wp-cli
-        image: wordpress:cli
+        image: nbc-wordpress:cli
+        build:
+            context: ./setup/docker/wordpress
+            dockerfile: wordpress-cli.Dockerfile
         restart: on-failure
         volumes:
             - ./wp-container:/var/www/html

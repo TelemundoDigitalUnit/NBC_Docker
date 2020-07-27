@@ -54,7 +54,7 @@ function spin_up_mysql() {
     # wait for mysql to be "ready"
     iterations=1
     while true; do
-        docker_compose exec $CONTAINER_NAME /bin/sh -c "mysqlshow -p\$MYSQL_ROOT_PASSWORD" 1>>$LOG_FILE 2>>$LOG_FILE
+        docker exec -it nbc-wp-$CONTAINER_NAME /bin/sh -c "mysqlshow -p\$MYSQL_ROOT_PASSWORD" 1>>$LOG_FILE 2>>$LOG_FILE
 
         if [ $? -eq 0 ]; then
             break

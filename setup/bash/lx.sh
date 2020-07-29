@@ -1,8 +1,8 @@
-WP_CONTENT_PATH=$BASE_SCRIPT_PATH/wp-container-lx/wp-content
+WP_CONTENT_PATH=$BASE_SCRIPT_PATH/wp-container/wp-content
 BUILD_PLUGINS=(
 )
 BUILD_THEMES=(
-    localx
+    nbc-station-lx
 )
 
 for plugin in ${BUILD_PLUGINS[*]}

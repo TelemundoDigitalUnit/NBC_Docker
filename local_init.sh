@@ -158,7 +158,6 @@ function spin_up_nginx() {
     printf "$GREEN\x00😈 Spinning up nginx and phpmyadmin\n$NC"
     docker_compose up -d \
         nginx phpmyadmin \
-        nginx-lx phpmyadmin-lx \
         nginx-microsites phpmyadmin-microsites \
         1>>$LOG_FILE 2>>$LOG_FILE \
     ;
@@ -219,11 +218,9 @@ function main () {
     check_error $?
 
     spin_up_mysql mysql
-    spin_up_mysql mysql-lx
     spin_up_mysql mysql-microsites
 
     install_wp_core ./wp-container
-    install_wp_core ./wp-container-lx
     install_wp_core ./wp-container-microsites
 
     printf "fixing permissions\n";
@@ -232,26 +229,21 @@ function main () {
     printf "$GREEN\x00😈 Removing WordPress wp-content folder$NC\n"
     rm -Rf \
         ./wp-container/wp-content \
-        ./wp-container-lx/wp-content \
         ./wp-container-microsites/wp-content \
     ;
 
     clone_repo ./wp-container $(get_project_respository main)
-    clone_repo ./wp-container-lx $(get_project_respository lx)
     clone_repo ./wp-container-microsites $(get_project_respository microsites)
 
     spin_up_wordpress wordpress ./wp-container
-    spin_up_wordpress wordpress-lx ./wp-container-lx
     spin_up_wordpress wordpress-microsites ./wp-container-microsites
 
     install_multisite wp-cli
-    install_multisite wp-cli-lx
     install_multisite wp-cli-microsites
 
     spin_up_nginx
 
     add_object_cache ./wp-container
-    add_object_cache ./wp-container-lx
     add_object_cache ./wp-container-microsites
 
     # nvm_setup

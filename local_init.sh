@@ -150,7 +150,7 @@ function install_multisite() {
     CONTAINER_NAME=$1
 
     printf "$GREEN\x00😈 Installing multi-site support..\n$NC"
-    docker_compose run $CONTAINER_NAME 1>>$LOG_FILE 2>>$LOG_FILE
+    docker_compose run -u $(id -u):$(id -g) $CONTAINER_NAME 1>>$LOG_FILE 2>>$LOG_FILE
     check_error $?
 }
 
@@ -190,9 +190,18 @@ function nvm_setup() {
 }
 
 function install_wp_core() {
-    CONTAINER_NAME=$1
-    docker_compose run $CONTAINER_NAME wp core download
-    check_error $?
+    OUT_DIR=$1
+    CORE_TEMP_PATH=/tmp/core.zip
+    CORE_UNZIP_PATH=/tmp/core_unzipped
+    if [ ! -e $CORE_TEMP_PATH ]; then
+        wget -q -O $CORE_TEMP_PATH https://wordpress.org/latest.zip
+        unzip -d $CORE_UNZIP_PATH $CORE_TEMP_PATH
+        check_error $?
+    fi;
+    if [ ! -e $OUT_DIR ]; then
+        cp -r $CORE_UNZIP_PATH/wordpress $OUT_DIR
+        check_error $?
+    fi;
 }
 
 function add_object_cache() {
@@ -213,9 +222,12 @@ function main () {
     spin_up_mysql mysql-lx
     spin_up_mysql mysql-microsites
 
-    install_wp_core wp-cli
-    install_wp_core wp-cli-lx
-    install_wp_core wp-cli-microsites
+    install_wp_core ./wp-container
+    install_wp_core ./wp-container-lx
+    install_wp_core ./wp-container-microsites
+
+    printf "fixing permissions\n";
+    sudo chown -hR $(id -u):$(id -g) wp-container-*
 
     printf "$GREEN\x00😈 Removing WordPress wp-content folder$NC\n"
     rm -Rf \

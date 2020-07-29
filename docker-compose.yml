@@ -26,7 +26,17 @@ services:
             - mysql
         environment:
             WORDPRESS_DB_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
-            WORDPRESS_CONFIG_EXTRA: require_once( ABSPATH . 'wp-content/vip-config/vip-config.php' );
+            WORDPRESS_CONFIG_EXTRA: |
+                define( 'WP_ALLOW_MULTISITE', true );
+                define( 'MULTISITE', true );
+                define( 'SUBDOMAIN_INSTALL', false );
+                $$base = '/';
+                define( 'DOMAIN_CURRENT_SITE', '127.0.0.1' );
+                define( 'PATH_CURRENT_SITE', '/' );
+                define( 'SITE_ID_CURRENT_SITE', 1 );
+                define( 'BLOG_ID_CURRENT_SITE', 1 );
+
+                require_once ABSPATH . 'wp-content/vip-config/vip-config.php';
         image: nbc-wordpress
         build:
             context: ./setup/docker/wordpress
